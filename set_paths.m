@@ -17,7 +17,7 @@ fprintf('[%s]: Adding path %s\n', mfilename, fullfile(pwd, 'data'));
 
 
 %% Unpack Dependencies
-deps = {'vlbenchmarks-1.0c','lightspeed-2.3.1','vlfeat-0.9.16','matlabPyrTools-1.3.1','export_fig','brisk-0.1.1','HCI-stereo','middlebury-flow'}; % pyrtools last
+deps = {'vlbenchmarks-1.0d','lightspeed-2.3.1','vlfeat-0.9.16','matlabPyrTools-1.3.1','export_fig-0.2','brisk-0.1.1','HCI-stereo','middlebury-flow'}; % pyrtools last
 for k=1:length(deps)
   % Unpack
   depdir = fullfile(pwd,'deps',deps{k});
