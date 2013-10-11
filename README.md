@@ -6,8 +6,8 @@ SEEDOFLIFE is a matlab toolbox for computing the seed-of-life nested shape descr
 This toolbox is released in conjunction with the ICCV'13 paper "Nested Shape Descriptors",
 and can be used to reproduce results.
 
-\>\> set_paths
-\>\> run_iccv13
+\>\> set_paths  
+\>\> run_iccv13  
 
 
 References
