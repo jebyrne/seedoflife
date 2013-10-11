@@ -75,7 +75,7 @@ opt.descriptor.sigma = 9;
 
 
 %% Distance
-opt.distance.mode = 'nesting';
+opt.distance.mode = 'euclidean';
 opt.distance.nesting.k_inlier = 0.7;  
 opt.distance.nesting.k_outlier = 0.15;  
 opt.distance.nesting.t_outlier = 0; 

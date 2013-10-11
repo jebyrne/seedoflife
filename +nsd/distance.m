@@ -20,6 +20,10 @@ end
 %% Pairwise Descriptor Distance
 switch mode
     
+  case {'L2','euclidean'}
+    if opt.verbose, fprintf('[nsd.%s]: euclidean distance\n', mfilename); end
+    D = sqdist(d_ref,d_obs);  % ref -> obs 
+  
   case {'L1'}
     if opt.verbose, fprintf('[nsd.%s]: L1 distance\n', mfilename); end
     D = vl_alldist2(d_ref,d_obs,'L1');  % ref -> obs 
