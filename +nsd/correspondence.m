@@ -19,7 +19,7 @@ ij_obs = fr_obs(1:2,:)';
 
 
 %% Pairwise Descriptor Distance
-D = nsd.distance(d_ref,fr_ref,d_obs,fr_obs,opt.distance.mode,opt.distance);
+D = nsd.distance(d_ref,di_ref,fr_ref,d_obs,di_obs,fr_obs,opt.distance.mode,opt.distance);
 
 
 %% Assignment

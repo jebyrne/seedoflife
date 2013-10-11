@@ -1,4 +1,4 @@
-function [D] = distance(d_ref, fr_ref, d_obs, fr_obs, mode, opt)
+function [D] = distance(d_ref, di_ref, fr_ref, d_obs, di_obs, fr_obs, mode, opt)
 %--------------------------------------------------------------------------
 %
 % Copyright (c) 2013 Jeffrey Byrne 
@@ -23,7 +23,6 @@ switch mode
   case {'L1'}
     if opt.verbose, fprintf('[nsd.%s]: L1 distance\n', mfilename); end
     D = vl_alldist2(d_ref,d_obs,'L1');  % ref -> obs 
-
     
   case {'L2-scanline'}
     if opt.verbose, fprintf('[nsd.%s]: L2-scanline distance\n', mfilename); end
@@ -37,7 +36,6 @@ switch mode
     end
     W = sparse(I,J,S,size(d_ref,2),size(d_obs,2));
     D = -W;  % sparse distance
-
     
   case {'L2-flow'}
     if opt.verbose, fprintf('[nsd.%s]: L2-flow gating distance (%1.2f px radius)\n', mfilename, opt.r_gating); end
@@ -50,28 +48,11 @@ switch mode
     W = sparse(I,J,S,size(d_ref,2),size(d_obs,2));
     D = -W;  % sparse distance
     
-  case {'L2','euclidean'}
-    if opt.verbose, fprintf('[nsd.%s]: euclidean distance\n', mfilename); end
-    D = sqdist(d_ref,d_obs);  % ref -> obs 
-        
-  case {'nsd'}  % nested shape descriptor distance
-    if opt.verbose, fprintf('[nsd.%s]: NSD distance\n', mfilename); end
-    D = nsd.descriptor.nsd_allpairdist(d_ref,di_ref,d_obs,di_obs);
-        
-  case {'nesting-hamming','nested-hamming'}
-    if opt.verbose, fprintf('[nsd.%s]: nested-hamming distance\n', mfilename); end
-    D = sqdist(d_ref,d_obs);  % ref -> obs 
-    D = min(D,floor(size(D,1)/2));  % least median squared
-
   case {'nesting','nested'}
     if opt.verbose, fprintf('[nsd.%s]: nesting distance\n', mfilename); end
-    [D] = nsd.descriptor.distance_mex(single(d_ref),single(d_obs),di_ref.n_bands,di_ref.n_lobes,di_ref.n_scales,opt.nesting.k_inlier,opt.nesting.k_outlier,opt.nesting.t_outlier);
+    [D] = nsd.seedoflife.nesting_distance_mex(single(d_ref),single(d_obs),di_ref.n_bands,di_ref.n_lobes,di_ref.n_scales,opt.nesting.k_inlier,opt.nesting.k_outlier,opt.nesting.t_outlier);
     %D(D>=opt.nesting.t_truncate) = NaN;
     D(D<0) = NaN;
-
-  case {'nesting-raw','nested-raw'}
-    if opt.verbose, fprintf('[nsd.%s]: nesting distance - non truncated\n', mfilename); end
-    [D] = nsd.descriptor.distance_mex(single(d_ref),single(d_obs),di_ref.n_bands,di_ref.n_lobes,di_ref.n_scales,opt.nesting.t_truncate,opt.nesting.s_mahalanobis);
             
   otherwise
     error('undefined distance mode ''%s''', mode);

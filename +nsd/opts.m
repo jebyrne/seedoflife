@@ -75,10 +75,10 @@ opt.descriptor.sigma = 9;
 
 
 %% Distance
-opt.distance.mode = 'euclidean';
-opt.distance.nesting.k_inlier = 0.7;  % nsd.train
-opt.distance.nesting.k_outlier = 0.15;  % nsd.train
-opt.distance.nesting.t_outlier = 0;%%;0.25E-3;  % nsd.train
+opt.distance.mode = 'nesting';
+opt.distance.nesting.k_inlier = 0.7;  
+opt.distance.nesting.k_outlier = 0.15;  
+opt.distance.nesting.t_outlier = 0; 
 opt.distance.r_gating = 16;
 opt.distance.verbose = opt.verbose;
 
