@@ -17,7 +17,7 @@ fprintf('[%s]: Adding path %s\n', mfilename, fullfile(pwd, 'data'));
 
 
 %% Unpack Dependencies
-deps = {'vlbenchmarks-1.0c','lightspeed-2.3.1','vlfeat-0.9.16','matlabPyrTools-1.3','export_fig','brisk-0.1.1','HCI-stereo','middlebury-flow'}; % pyrtools last
+deps = {'vlbenchmarks-1.0c','lightspeed-2.3.1','vlfeat-0.9.16','matlabPyrTools-1.3.1','export_fig','brisk-0.1.1','HCI-stereo','middlebury-flow'}; % pyrtools last
 for k=1:length(deps)
   % Unpack
   depdir = fullfile(pwd,'deps',deps{k});
@@ -36,7 +36,7 @@ end
 %% Compiling
 if ~(exist('corrDn') == 3)
   origdir = pwd;
-  cd(fullfile(origdir,'deps','matlabPyrTools-1.3','matlabPyrTools-1.3'));
+  cd(fullfile(origdir,'deps','matlabPyrTools-1.3.1','matlabPyrTools-1.3.1'));
   eval('compile_mex');
   cd(origdir);
 end
