@@ -36,7 +36,7 @@ end
 try
   run('compile_mex.m');
 catch ME
-  fprintf('[%s]: compiling mex files failed - try running compile_mex.m to track down the problem');
+  fprintf('[%s]: compiling mex files failed - try running compile_mex.m to track down the problem', mfilename);
 end
 
 
