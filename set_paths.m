@@ -36,7 +36,8 @@ end
 try
   run('compile_mex.m');
 catch ME
-  fprintf('[%s]: compiling mex files failed - try running compile_mex.m to track down the problem', mfilename);
+  fprintf('[%s]: WARNING - compiling mex files failed!  Try running compile_mex.m to track down the problem', mfilename);
+  fprintf('[%s]: WARNING - mex files are not needed for seedoflife demos, but some optional tests or evaluations will not run', mfilename);
 end
 
 
