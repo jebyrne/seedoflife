@@ -24,5 +24,5 @@ In this paper, we propose a new family of binary local feature descriptors calle
 
 Reference
 ----------
-* J. Byrne and J. Shi, "Nested Shape Descriptors", International Conference on Computer Vision (ICCV'13), Sydney Australia, 2013
+* J. Byrne and J. Shi, "[Nested Shape Descriptors](https://www.dropbox.com/s/g8yc76ffx8ia99d/iccv13_nsd_final.pdf)", International Conference on Computer Vision (ICCV'13), Sydney Australia, 2013
 
