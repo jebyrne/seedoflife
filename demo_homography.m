@@ -6,6 +6,13 @@ function [] = demo_homography(tmplfile)
 %--------------------------------------------------------------------------
 close all;
 
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
+
+
 %% Inputs
 if nargin == 0
   tmplfile = 'peppers.png';

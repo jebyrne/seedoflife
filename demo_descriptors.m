@@ -3,9 +3,16 @@ function [] = demo_descriptors(imreffile, imobsfile, k_demo, nsdopt)
 %
 % Copyright (c) 2013 Jeffrey Byrne 
 %
+% To run all demonstrations, set
+%
 %--------------------------------------------------------------------------
 close all;
 
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
 
 %% Input
 if ~exist('nsdopt','var') 
@@ -16,7 +23,7 @@ if ~exist('imreffile','var') || isempty(imreffile)
   %imreffile = 'cameraman.tif';
 end
 if ~exist('k_demo','var') || isempty(k_demo)
-  k_demo = 3;
+  k_demo = [1 2 3 4];
 end
 do_demo = zeros(1,100);
 do_demo(k_demo) = 1;
@@ -33,8 +40,8 @@ if ~exist('imobsfile','var') || isempty(imobsfile)
   %[A,A_prms] = nsd.util.similarity_transform([0 0], pi/4, 1); % random similarity
   %fprintf('[nsd.%s]: random affine transform (tij=[%1.1f,%1.1f], r=%1.2f, sx=%1.2f, sy=%1.2f, kx=%1.1f, ky=%1.1f)\n', mfilename, A_prms);
   
-  %A = nsd.homography.random(128,128,4);
-  [A,A_prms] = nsd.util.similarity_transform([0 0], -pi/3, 1); % random similarity
+  A = nsd.homography.random(128,128,4);
+  %[A,A_prms] = nsd.util.similarity_transform([0 0], -pi/3, 1); % random similarity
   imobs = nsd.util.imtransform(imref,A);
 else
   imobs = nsd.preprocess(imobsfile, nsdopt.pp);
@@ -48,7 +55,9 @@ if do_demo(1)
   %nsd.show.descriptor(f_ref.imgrey,di_ref);
   nsd.show.frame(f_ref.imgrey,fr_ref);
   nsd.show.features(f_ref);
+  pause
 end
+
 
 
 %% Nested shape descriptor - greedy matching 
@@ -58,6 +67,7 @@ if do_demo(2)
   [d_obs,di_obs,fr_obs] = nsd.descriptor(imobs, nsdopt.descriptor);    
   [d_asgn,k_asgn] = min(sqdist(d_ref,d_obs),[],2);
   nsd.show.matching(imobs, imref, fr_ref(1:2,:)', fr_obs(1:2,k_asgn)', fr_obs(1:2,:)');  
+  pause
 end
 
 
@@ -67,6 +77,7 @@ if do_demo(3)
   [ij_ref,ij_refinobs,ij_obs,w,info] = nsd.correspondence(imref,imobs, nsdopt.correspondence);
   nsd.show.matching(info.f_obs.imgrey, info.f_ref.imgrey, ij_ref, ij_refinobs, ij_obs);  
   %nsd.show.distance(info.f_obs.imgrey, info.f_ref.imgrey, ij_refinobs, ij_ref);  
+  pause
 end
 
 
@@ -83,12 +94,15 @@ if do_demo(4)
   k_obs = nsd.show.nearest_interestpoint(f_obs.imgrey, fr_obs);
 
   % Visualize
-  D_ref = nsd.descriptor.reshape(d_ref,di_ref);
+  D_ref = nsd.seedoflife.reshape(d_ref,di_ref);
   D_ref = reshape(D_ref(:,:,:,k_ref), [di_ref.n_bands*di_ref.n_lobes di_ref.n_scales]);
-  D_obs = nsd.descriptor.reshape(d_obs,di_obs);
+  D_obs = nsd.seedoflife.reshape(d_obs,di_obs);
   D_obs = reshape(D_obs(:,:,:,k_obs), [di_obs.n_bands*di_obs.n_lobes di_obs.n_scales]);  
-  figure(1); clf; imagesc(D_ref,[0 nsdopt.descriptor.sol.features.spyr.oe.max]); title('ref');  colorbar;
-  figure(2); clf; imagesc(D_obs,[0 nsdopt.descriptor.sol.features.spyr.oe.max]); title('obs');  colorbar;
+  figure(1); clf; imagesc(D_ref,[0 1]); title('reference seedoflife');  colorbar;
+  xlabel('scales'); ylabel('orientations and lobes')
+  figure(2); clf; imagesc(D_obs,[0 1]); title('observed seedoflife');  colorbar;
+  xlabel('scales'); ylabel('orientations and lobes')  
+  pause
 end
 
 
@@ -109,7 +123,8 @@ end
 %% NSD - Scale
 if do_demo(8)
   fprintf('[%s]: Demo 8 - scale matching \n', mfilename);
-  S = 1+ [0:0.125:1];
+  nsdopt.correspondence.descriptor.detector.mode = 'vlsift';  
+  S = 1 + [-0.5:0.125:1];
   for s=S
     [A] = nsd.util.similarity_transform([0 0], 0, s); % scale
     imobs = nsd.util.imtransform(imref,A);    
@@ -118,114 +133,6 @@ if do_demo(8)
   end
 end
 
-
-%% Covariance
-if do_demo(9)
-  fprintf('[%s]: Demo 9 - covariance \n', mfilename);
-  if nsdopt.descriptor.sol.do_logspiral_difference 
-    warning('logspiral difference enabled - forcing disabled');
-    nsdopt.descriptor.sol.do_logspiral = false;
-  end
-  nsdopt.descriptor.detector.n_subsample = 8;  % for visualization
-  [d,di,fr,f] = nsd.descriptor(imref, nsdopt.descriptor);
-  [E,Ec] = nsd.descriptor.covariance(d,di,fr); 
-  nsd.show.covariance(f.imgrey,fr(1:2,:)',E);
-end
-
-
-
-%% Nested shape descriptor - assignment
-if do_demo(10)
-  fprintf('[%s]: Demo 10 - assignment \n', mfilename);
-  [d_ref,di_ref,fr_ref,f_ref] = nsd.descriptor(imref, nsdopt.descriptor);
-  [d_obs,di_obs,fr_obs,f_obs] = nsd.descriptor(imobs, nsdopt.descriptor);    
-
-  A = nsd.descriptor.assignment(d_ref,di_ref,d_obs,di_obs);
-  
-  while(1)
-    k_ref = nsd.show.nearest_interestpoint(f_ref.imgrey, fr_ref);    
-    figure(10); subplot(1,2,1); imagesc(f_ref.imgrey); colormap(gray); axis image;
-    hold on; plot(fr_ref(2,k_ref),fr_ref(1,k_ref),'g.'); hold off;
-    figure(10); subplot(1,2,2); imagesc(f_obs.imgrey); colormap(gray); axis image;
-    hold on; plot(fr_obs(2,A(k_ref,:)),fr_obs(1,A(k_ref,:)),'g.'); hold off;
-    drawnow;
-  end
-%  nsd.show.matching(imobs, imref, fr_obs(1:2,:)', fr_ref(1:2,k_asgn)');  
-end
-
-
-%% Flower of life
-if do_demo(11)
-  fprintf('[%s]: Demo 11 - flower of life \n', mfilename);
-  [d_ref,di_ref,fr_ref,f_ref] = nsd.descriptor(imref, nsdopt.descriptor);
-  [d_obs,di_obs,fr_obs,f_obs] = nsd.descriptor(imobs, nsdopt.descriptor);        
-%  [U] = nsd.floweroflife.descriptor(fr_ref,8,32);  
-%  [V] = nsd.floweroflife.descriptor(fr_obs,8,32);  
-  
-  keyboard
-%   for k=1:4
-%     for j=1:4
-%       k_sel = find(U{j,k}(:,k_ref));
-%       nsd.show.frame(f_ref.imgrey, fr_ref(:,k_sel), figure(1)); hold on
-%       plot(fr_ref(2,k_ref),fr_ref(1,k_ref),'r.','MarkerSize',10);
-%       U{j,k}(k_sel,k_ref)
-% 
-%       k_sel = find(V{j,k}(:,k_obs));
-%       nsd.show.frame(f_obs.imgrey, fr_obs(:,k_sel), figure(2)); hold on
-%       plot(fr_obs(2,k_obs),fr_obs(1,k_obs),'r.','MarkerSize',10);
-%       V{j,k}(k_sel,k_obs)
-%       
-%       pause;
-%     end
-%   end
-%   keyboard
-    %k_ref = nsd.show.nearest_interestpoint(f_obs.imgrey, fr_obs)
-
-  while(1)
-    k_ref = nsd.show.nearest_interestpoint(f_ref.imgrey, fr_ref);
-    %k_ref = 89;
-    for k=size(U,2):-1:1
-      u = U(:,k:end);
-      v = V(:,k:end);
-      D = nsd.floweroflife.distance(u,v,d_ref,d_obs,[],[]);  
-      figure(2); plot(full(-D(k_ref,:)));  
-      w = full(-D(k_ref,:)); k_valid = find(isfinite(w));
-      w = exp((w(k_valid) - mean(w(k_valid))));
-      nsd.show.imscatter(imobs,fr_obs(1:2,k_valid)', w, figure(1), 100);
-      pause
-    end
-  end
-  
-  while(1)
-    k_ref = nsd.show.nearest_interestpoint(f_ref.imgrey, fr_ref);
-    D = nsd.floweroflife.distance(U,V,d_ref,d_obs,[],[]);
-    figure(2); plot(full(-D(k_ref,:)));  
-    w = full(-D(k_ref,:)); k_valid = find(isfinite(w));
-    w = exp((w(k_valid) - mean(w(k_valid))));
-    nsd.show.imscatter(imobs,fr_obs(1:2,k_valid)', w, figure(1), 100);
-    pause
-  end
-    return;
-
-%   for k=1:7
-%     k_sel = find(U{k}(:,k_ref));
-%     clf; nsd.show.frame(f_ref.imgrey, fr_ref(:,k_sel), figure(3)); hold on
-%     plot(fr_ref(2,k_ref),fr_ref(1,k_ref),'r.','MarkerSize',10);
-%     pause;
-%   end
-%   return;
-  
-  
-%  keyboard
-  %[d_asgn,k_asgn] = min(D,[],2);
-  [u,v] = find(D);
-  [dists, perm] = sort(nonzeros(D(:)),'ascend');
-  %[aIdx bIdx] = ind2sub([size(d_ref,2), size(d_obs,2)], perm(1:nnz(D)));
-  k_asgn = benchmarks.helpers.greedyBipartiteMatching(size(d_ref,2), size(d_obs,2), [u(perm) v(perm)]);  % vlbenchmarks
-   k_valid = find(k_asgn);
-%   %[k_asgn] = nsd.floweroflife.assignment(U,-D,V);
-   nsd.show.matching(imobs, imref, fr_ref(1:2,k_valid)', fr_obs(1:2,k_asgn(k_valid))', fr_obs(1:2,k_asgn(k_valid))');
-end
 
 
 %% Debugging

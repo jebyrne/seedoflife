@@ -24,15 +24,13 @@ while(1)
   fprintf('[nsd.%s]: matched frames\n', mfilename);
   k_ref = find(ij_ref(k_ref,1)==ij_ref(:,1) & ij_ref(k_ref,2)==ij_ref(:,2));  % multiple orientations?
   k_obs = find(ij_obs(k_obs,1)==ij_obs(:,1) & ij_obs(k_obs,2)==ij_obs(:,2));  % multiple orientations?
-  fr_ref_k = fr_ref(:,k_ref)   % selected match
-  fr_obs_k = fr_obs(:,k_obs)   % selected match
+  fr_ref_k = fr_ref(:,k_ref);   % selected match
+  fr_obs_k = fr_obs(:,k_obs);   % selected match
   k_ref = k_ref(1);  % multiple orientations?
   k_obs = k_obs(1);  % multiple orientations?
   
   % there is a problem visualizing matches with multiple orientations and multiple scales
   % matches may look wrong, but are matched correctly at least one orientation
-   
-  
   
   
   % Greedy assignment
@@ -85,6 +83,5 @@ while(1)
   figure(h10); subplot(2,2,3); imagesc(ndsum(D_ref,2));  colorbar; title('bands vs scale');
   figure(h10); subplot(2,2,4); imagesc(ndsum(D_ref,3));  colorbar; title('bands vs lobes');
   
-  keyboard
 end
 

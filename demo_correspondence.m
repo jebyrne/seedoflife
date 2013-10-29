@@ -5,6 +5,12 @@ function [] = demo_correspondence(im1, im2)
 %
 %--------------------------------------------------------------------------
 
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
+
 %% Inputs
 if nargin==0
   im1 = 'middlebury_stereo_teddy_im2.png';  % ./data

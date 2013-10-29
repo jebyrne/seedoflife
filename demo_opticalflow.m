@@ -5,6 +5,12 @@ function [] = demo_opticalflow(im1, im2)
 %
 %--------------------------------------------------------------------------
 
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
+
 %% Examples
 if nargin==0
   im1 = 'middlebury_flow_grove2_frame10.png';  % ./data

@@ -6,6 +6,12 @@ function [] = demo_stereo(imleft, imright)
 %--------------------------------------------------------------------------
 close all; 
 
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
+
 %% Inputs
 if nargin==0
   imleft = 'middlebury_stereo_teddy_im2.png';  % ./data

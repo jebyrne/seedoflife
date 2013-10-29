@@ -19,6 +19,12 @@ function [] = demo_sepspyr(imgfile)
 %
 %--------------------------------------------------------------------------
  
+%% Paths
+if ~(exist('ndsum') == 2)
+  fprintf('[%s]: running set paths\n', mfilename);
+  run('set_paths.m');
+end
+
 
 %% Inputs
 close all;
