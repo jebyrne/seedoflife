@@ -11,8 +11,8 @@ Installation
 
 You must run set_paths to initialize dependencies before running demos.
 
-sh\> git clone https://github.com/jebyrne/seedoflife
-\>\> cd seedoflife
+sh\> git clone https://github.com/jebyrne/seedoflife  
+\>\> cd seedoflife  
 \>\> set_paths  
 \>\> run_iccv13  
 
