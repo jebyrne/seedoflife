@@ -21,7 +21,7 @@ imglist = {};
 for j=1:length(dir_files)
   % Read current image filename
   [x,x,ext] = fileparts(dir_files(j).name);
-  if (dir_files(j).isdir == 0) && ~isempty(ext) && ~isempty(strmatch(ext,{'.jpg','.png','.tif','.pgm'}))
+  if (dir_files(j).isdir == 0) && ~isempty(ext) && ~isempty(strmatch(ext,{'.jpg','.png','.tif','.pgm','.bmp'}))
     num_imgs = num_imgs + 1;
     imglist(num_imgs) = {strcat(imgdir,filesep,dir_files(j).name)};
   end

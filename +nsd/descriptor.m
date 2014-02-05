@@ -42,7 +42,7 @@ end
 
 
 %% Features
-if log2(min(size(im))) < (opt.features.spyr.n_scales+2)
+if ceil(log2(max(size(im)))) < (opt.features.spyr.n_scales+2)
   fprintf('[nsd.%s]: padding image to meet minimum scale requirements\n',mfilename);
   dmax = 2.^(opt.features.spyr.n_scales+2);
   im = padarray(im,max(ceil([(dmax - size(im,1))/2 (dmax - size(im,2))/2]),0),'both');
