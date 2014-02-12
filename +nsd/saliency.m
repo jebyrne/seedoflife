@@ -1,12 +1,26 @@
-function [S] = saliency(im)
+function [imsalient] = saliency(im)
+%--------------------------------------------------------------------------
+%
+% Copyright (c) 2014 Jeffrey Byrne
+%
+%--------------------------------------------------------------------------
 
-[d,di] = nsd.descriptor(im, fr);
+imgrey = nsd.util.im2gray(im);
+fr = nsd.detector.dense(imgrey, 4, 4);
 
-D = nsd.seedoflife.reshape(d.^2,di);
-for k=1:n_levels
-  fr = nsd.detector.dense(im, 2^k, 2^k); 
-  w = ndsum(D(:,:,k,:), 1:3);
-  s(k) = nsd.util.imblur(w, 2^k);  
-  S = S + s;
+opt = nsd.opts();
+opt.descriptor.features.spyr.n_scales = ceil(log2(min(size(imgrey))))-2;
+opt.descriptor.sol.binarize = 0;
+opt.descriptor.sol.do_logspiral = 1;
+[d,di] = nsd.descriptor(imgrey, opt.descriptor, fr);
+W = nsd.seedoflife.reshape(d.^2,di);
+imsalient = zeros(size(imgrey));
+
+for k=di.n_scales:-1:1
+  w = ndsum(W(:,:,k,:), 1:3);
+  imsalient = imsalient + 2*(2^k + 1)*nsd.util.imblur(full(sparse(fr(1,:), fr(2,:), w, size(imgrey,1), size(imgrey,2))), 2*(2^k + 1));
 end
+
+
+
 
