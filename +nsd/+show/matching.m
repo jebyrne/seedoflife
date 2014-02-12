@@ -42,7 +42,9 @@ figure(h);
 subplot(1,2,1); 
 imagesc(mat2gray(imobs)); axis image; colormap(gray); axis off; title('Observation');
 hold on; 
-scatter(ij_obs(:,2),ij_obs(:,1),2,'k','filled'); axis ij; 
+if ~isempty(ij_obs)
+  scatter(ij_obs(:,2),ij_obs(:,1),2,'k','filled'); axis ij; 
+end
 scatter(ij_refinobs(:,2),ij_refinobs(:,1),S,C,'filled'); axis ij; 
 hold off;
 
