@@ -20,6 +20,11 @@ do_features = ~exist('f','var') || isempty(f);
 %% Interest points
 switch opt.mode    
 
+  case {'dense'}
+    [U,V] = meshgrid(1:4:size(img,2), 1:4:size(img,1));
+    ij = [V(:) U(:)];
+    fr = nsd.detector.frame(ij,0,1);
+    
   case {'random'}
     n = 100;
     ij = [size(img,1)*rand(1,n);size(img,2)*rand(1,n)]';
