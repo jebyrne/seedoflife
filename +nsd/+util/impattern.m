@@ -53,6 +53,11 @@ switch(mode)
     im = mat2gray(repmat([1:64 64*ones(1,64)],128,1));
   case 'sinusoid'
     im = mat2gray(repmat(sin(-pi:pi/64:pi),128,1));
+        
+  case 'itti_koch_salient_orientation'
+    pat = zeros(32,32); 
+    pat(16-8:16+8,16-8:16+8) = eye(17);
+    im = [pat pat pat pat pat; pat flipud(pat) pat pat pat; pat pat pat pat pat; pat pat pat pat pat; pat pat pat pat pat; ];
     
   otherwise
     error('unknown pattern');
