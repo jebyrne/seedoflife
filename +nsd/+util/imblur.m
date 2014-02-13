@@ -1,4 +1,4 @@
-function [imgout,h] = imblur(img, s)
+function [imgout,H] = imblur(img, s)
 %--------------------------------------------------------------------------
 %
 % Copyright (c) 2011 Jeffrey Byrne
@@ -13,5 +13,8 @@ end
 
 %% Blur
 fsize = ceil(s*3) * 2 + 1;  % default size
-h = fspecial('gaussian',[fsize fsize],s);
-imgout = imfilter(double(img),h);
+H = fspecial('gaussian',[fsize fsize],s);
+
+%imgout = imfilter(double(img),H);  % 2D convolution
+h = H(:,round(size(H,2)/2)); h=single(h./sum(h));
+imgout = conv2(h,h,single(img),'same');  % separable convolution
