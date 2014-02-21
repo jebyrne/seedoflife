@@ -42,7 +42,7 @@ spyr = sepspyr.build(im, spyr_filtertype, n_levels, spyr_boundary);
 spyr.n_orientations = n_orientations;
 for k=1:n_orientations
   th = 2*pi*((k-1)/n_orientations);
-  spyr.decomposition(:,k) = sepspyr.steer(spyr, th, 1:n_levels);
+  spyr.decomposition(:,k) = sepspyr.steer(spyr, -th, 1:n_levels);
 end
 
 

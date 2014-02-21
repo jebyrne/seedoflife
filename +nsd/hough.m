@@ -19,7 +19,7 @@ function [ij_max, v_max, Hq] = hough(W, ij_obs, dij_ref, houghsize, nq, opt)
 
 %% Options
 if ~exist('opt','var')
-  opt.do_border = true;  % normalize by total number of possible votes
+  opt.do_border = false;  % normalize by total number of possible votes
   opt.mn_filt = [2*nq 2*nq];  % final quantized interpolation filter size
   opt.var_filt = nq;  % final interpolation filter variance
 end
@@ -47,23 +47,15 @@ ij_vote = floor(ij_vote) + 1;
 % Quantization
 H = sparse(ij_vote(k_valid,1),ij_vote(k_valid,2),w_vote(k_valid),M,N);
 sumfun = @(x) sum(x(:))*ones(size(x));
-%Hq = blkproc(H,[nq nq],round([nq/2 nq/2]),sumfun);  % full size, quantized
-Hq = blkproc(H,[nq nq],sumfun);  % full size, quantized
+Hq = blkproc(H,[nq nq],round([nq/2 nq/2]),sumfun);  % full size, quantized
+%Hq = blkproc(H,[nq nq],sumfun);  % full size, quantized
 
 
-%% Border reweight 
-if opt.do_border 
-  [V,U] = meshgrid(1:nq:N,1:nq:M); uv=[U(:) V(:)];
-  n_center = size(uv,1);
-  W_center = zeros(ceil(size(Hq)/nq));
-  for k=1:n_center
-    ij = repmat(uv(k,:),n_ref,1) + dij_ref;
-    W_center(k) = n_ref ./ length(nsd.util.inmat(size(Hq), ij(:,1), ij(:,2)));
-  end
-  W_center(~isfinite(W_center)) = 0;
-  W_center = imresize(W_center,size(Hq),'nearest');
-  Hq = Hq .* W_center;  % border compensation
-end
+%% Density reweight 
+W_density = sparse(ij_vote(k_valid,1),ij_vote(k_valid,2),1,M,N);
+Wq = blkproc(W_density, [nq, nq], [nq/2, nq/2], sumfun);
+Hq = Hq ./ Wq;
+Hq(Wq <= 4*(size(dij_ref,1))) = 0;
 
 
 %% Interpolation

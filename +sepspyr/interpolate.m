@@ -11,7 +11,7 @@ function [spyri] = interpolate(spyr)
 spyri = spyr;
 for i=1:spyr.n_levels
   for j=1:spyr.n_orientations
-    spyri.decomposition{i,j} = imresize((spyr.decomposition{i,j}), size(spyr.decomposition{1,1}), 'bicubic');
+    spyri.decomposition{i,j} = imresize(single(spyr.decomposition{i,j}), size(spyr.decomposition{1,1}), 'bicubic'); 
     spyri.interpolation(:,:,i,j) = spyri.decomposition{i,j};
   end
 end
