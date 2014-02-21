@@ -110,7 +110,7 @@ end
 if do_demo(7)
   fprintf('[%s]: Demo 7 - rotation invariance \n', mfilename);
   R = 0:(2*pi/64):2*pi;
-  nsdopt.correspondence.descriptor.detector.mode = 'canny-rot';  % with rotation
+  %nsdopt.correspondence.descriptor.detector.mode = 'canny-rot';  % with rotation
   for r=R
     [A] = nsd.util.similarity_transform([0 0], -r, 1); % rotation
     imobs = nsd.util.imtransform(imref,A);
@@ -123,7 +123,7 @@ end
 %% NSD - Scale
 if do_demo(8)
   fprintf('[%s]: Demo 8 - scale matching \n', mfilename);
-  nsdopt.correspondence.descriptor.detector.mode = 'vlsift';  
+  %nsdopt.correspondence.descriptor.detector.mode = 'vlsift';  
   S = 1 + [-0.5:0.125:1];
   for s=S
     [A] = nsd.util.similarity_transform([0 0], 0, s); % scale

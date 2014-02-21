@@ -14,7 +14,7 @@ if opt.verbose
   switch lower(opt.mode)
     case {'floweroflife'}
       fprintf('[nsd.%s]: descriptor=''%s'', detector=''%s''\n',mfilename,opt.mode,opt.detector.mode);
-    case {'clover','cocentric','seedoflife','affineseedoflife'}    
+    case {'clover','cocentric','seedoflife','asol'}    
       if opt.sol.normalization.global
         str_norm = sprintf('%s-global',opt.sol.normalization.mode);
       else
@@ -52,9 +52,9 @@ if ceil(log2(max(size(im)))) < (opt.features.spyr.n_scales+2)
 end
 
 switch lower(opt.mode)
-  case {'affineseedoflife','floweroflife'}
+  case {'floweroflife'}
     f = nsd.seedoflife.features(im, opt.features);    
-  case {'seedoflife','clover','cocentric','nsd'}
+  case {'seedoflife','clover','cocentric','nsd','asol'}
     opt.features.do_legacy_pooling = true;  % FORCE ME
     f = nsd.seedoflife.features(im, opt.features);
   otherwise
@@ -71,7 +71,10 @@ end
 %% Descriptor
 opt.mode = lower(opt.mode);
 switch opt.mode
-  case {'seedoflife', 'affineseedoflife'}
+  case {'asol'}
+    [d,di] = nsd.seedoflife.asol(f, fr, opt.sol);
+
+  case {'seedoflife'}
     [d,di] = nsd.seedoflife.seedoflife(f, fr, opt.sol);
     
   case {'clover','seedoflife-3'}

@@ -20,7 +20,7 @@ opt.pp.greyscale = 1;
 %% Features
 opt.features.spyr.n_bands = 8;  
 opt.features.spyr.n_scales = floor(log2(opt.pp.maxsize))-2; 
-opt.features.spyr.do_signed_orientation = false; 
+opt.features.spyr.do_signed_orientation = true; 
 opt.features.spyr.oe.max = inf;  % TESTING     
 opt.features.spyr.oe.min = 0; 
 opt.features.spyr.boundary = 'reflect1';

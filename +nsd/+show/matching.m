@@ -17,7 +17,7 @@ else
   w = mat2gray(w); % [0,1]
 end
 if ~exist('smax','var') || isempty(smax)
-  smax = 10;
+  smax = 15;
 end
 if ~exist('do_pause','var') || isempty(do_pause)
   do_pause = 0;
@@ -33,7 +33,7 @@ ij_ref = ij_ref(k_valid(k_sort),:);
 w = w(k_valid);
 
 n_points = size(ij_ref,1);
-S = round(smax*w)+5;
+S = round(smax*w);
 C = jet(n_points);
 
 

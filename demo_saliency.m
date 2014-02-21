@@ -5,10 +5,10 @@ function [imsaliency, imgrey, imblend] = demo_saliency(imfile, do_plot_maximum)
 %
 %--------------------------------------------------------------------------
 
-if nargin == 0
+if nargin == 0 || isempty(imfile)
     imfile = 'cameraman.tif';
 end
-if nargin == 1
+if nargin < 2
     do_plot_maximum = false;
 end
 

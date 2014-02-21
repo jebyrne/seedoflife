@@ -22,10 +22,12 @@ th_lobe = 0:2*pi/(n_lobes):(2*pi);  % lobe orientation
 r_lobe = opt.dr*ones(1,n_scales);  % lobe radius 
 k_support = 3;  % 7x7 pooling 
 fr_ij = fr(1:2,:)';  % frame position
-fr_s = fr(3,:);  % frame scale
-fr_r = fr(4,:);  % frame rotation
+%fr_s = fr(3,:);  % frame scale
+%fr_r = fr(4,:);  % frame rotation
+fr_s = ones(size(fr(3,:)));  % IGNORE frame scale
+fr_r = zeros(size(fr(4,:)));  % IGNORE frame rotation
+P = zeros(n_lobes, n_lobescale, n_desc);  % descriptors
 D = zeros(n_bands, n_lobes, n_lobescale, n_desc);  % descriptors
-%Dm = ones(n_bands, n_lobes, n_lobescale, n_desc);  % descriptors
 oesize = size(f.oe_pooled);
 f_oe = reshape(f.oe_pooled, [oesize(1) oesize(2) oesize(3)*oesize(4)]); 
 for i=1:n_lobes
@@ -57,62 +59,73 @@ for i=1:n_lobes
     [k_rlip] = nsd.util.sub2ind(oesize(3:4), ij_rlip(1,:), ij_rlip(2,:));  % rounded lobe interest points (all guaranteed valid from border handling)    
     d = f_oe(:,:,k_rlip);         
     % --- </FASTHACK>: vectorized border handling
+        
+    D(:,i,j,:) = squeeze(d(:,max(j-1,1),:));
     
-    % Subband scale interpolation (vectorized)
-    si = log2(fr_s);  % scale interpolation
-    w = nsd.util.vectorize(repmat(ceil(abs(si)) - abs(si),n_bands,1));
-    jmin = min(max(j-1+sign(si).*floor(abs(si)),1),n_scales);  % minus 1 is critical!
-    jmax = min(max(j-1+sign(si).*ceil(abs(si)),1),n_scales);
-
-    k_maxscale = sub2ind(size(d),nsd.util.vectorize(repmat([1:n_bands]',1,n_desc)),...
-      nsd.util.vectorize(repmat(jmax,n_bands,1)),nsd.util.vectorize(repmat(1:n_desc,n_bands,1)));
-    k_minscale = sub2ind(size(d),nsd.util.vectorize(repmat([1:n_bands]',1,n_desc)),...
-      nsd.util.vectorize(repmat(jmin,n_bands,1)),nsd.util.vectorize(repmat(1:n_desc,n_bands,1)));
-    D(:,i,j,:) = reshape((1-w).*d(k_maxscale) + w.*d(k_minscale), n_bands, n_desc);        
-  end
-end
-
-
-%% Rotation intepolation
-fr_r = fr(4,:);  % frame rotation
-if any(fr_r > 0)
-  V = reshape(D, [n_bands n_lobes*n_scales n_desc]);
-  [X,Y] = meshgrid(1:n_lobes*n_scales, 1:n_bands);
-  for k=1:n_desc
-    if f.opt.spyr.do_signed_orientation
-      ri = fr_r(k)*(n_bands/(2*pi));  
-    else
-      ri = fr_r(k)*(n_bands/(pi));  
+    
+    % Affine pooling
+%     for u=1:n_bands
+%       for v=1:n_scales
+%       %for v=j
+%         di = mod((i-u),n_lobes)+1;
+%         %dj = v;
+%         dj = [max(j-v, 1) min(j+v, n_scales)];
+%         P(di, dj(1), :) = P(di, dj(1), :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+%         P(di, dj(2), :) = P(di, dj(2), :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+%         %P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+%       end
+%     end
+    
+    % Euclidean pooling
+    for u=1:n_bands
+      for v=j
+        di = mod((i-u),n_lobes)+1;
+        dj = v;
+        P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+      end
     end
-    Yi = mod((Y+ri)-1, n_bands) + 1;      
-    v = [V(:,:,k); V(1,:,k)]; % with circular boundary 
-    Vi = interp2(v, X, Yi);  % cannot steer because this is OE
-    D(:,:,:,k) = reshape(Vi, [n_bands n_lobes n_scales]);    
+    
   end
 end
 
 
 %% Cumulative weighting
 for k=1:n_scales
- D(:,:,k,:) = D(:,:,k,:)*(n_scales+1-k);
+  %D(:,k,:) = D(:,k,:)*(n_scales+1-k);
+  D(:,:,k,:) = D(:,:,k,:)*(n_scales+1-k);
 end
+
+
+%% Pooling
+B=[];
+for k=1:size(D,3)
+  for j=1:size(D,2)
+    A = zeros(size(D(:,:,:,1)));
+    for i=1:size(D,1)
+      A(i, mod((j-i),size(D,2))+1,k) = 1;
+    end
+    B = [B; A(:)'];
+  end
+end
+%B = nsd.util.column_stochastic(B')';
+
 
 
 %% Binarize - Logarithmic spiral 
 if opt.do_logspiral
-  Sa = (circshift(D,[0 1 1 0]));  
-  Sb = (circshift(D,[0 1 -1 0]));
+  Sa = (circshift(P,[1 1 0]));  
+  Sb = (circshift(P,[1 -1 0]));
   %S = D - (0.5*Sa + 0.5*Sb);  % weighted combination 
-  S = D - Sa;  % single log spiral
+  S = P - Sa;  % single log spiral
 %  S(:,:,1,:) = D(:,:,1,:);  % smallest scale unnormalized (do not use circular shift back to one!)
-  S(:,:,1,:) = -D(:,:,1,:)+Sb(:,:,1,:);  % smallest scale reverse normalized
+  S(:,1,:) = -P(:,1,:)+Sb(:,1,:);  % smallest scale reverse normalized
 %  S(:,:,end,:) = D(:,:,end,:)-Sa(:,:,end,:);  % smallest scale reverse normalized
  % Dm = (circshift(Dm,[0 1 1 0]));  % mask
  
 if opt.binarize
-   D = double(sign(S) > 0);
+   P = double(sign(S) > 0);
  else
-   D = S;
+   P = S;
  end
  %D = S;  warning('binarization disabled');
  %warning('logspiral disabled');
@@ -120,8 +133,11 @@ end
 
 
 %% Vectorize
-d = reshape(D, [n_bands*n_lobes*n_scales n_desc]);
-%dm = reshape(Dm, [n_bands*n_lobes*n_scales n_desc]);
+% d = reshape(D, [n_lobes*n_lobescale*n_bands n_desc]);
+% d = B*d;
+
+d = reshape(P, [n_lobes*n_lobescale n_desc]);
+
 
 
 %% Descriptor information
