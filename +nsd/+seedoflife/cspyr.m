@@ -31,7 +31,7 @@ else
 end
 
 sspyr = sepspyr.build(double(img), '9iq', spyr.n_scales, opt.boundary); %warning('sepspyr 9iq')
-
+spyr.sepspyr = sspyr;
 
 %% Scales and bands
 for z=1:spyr.n_scales
