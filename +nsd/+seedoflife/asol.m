@@ -1,4 +1,4 @@
-function [d,di] = seedoflife(f, fr, opt)
+function [d,di] = asol(f, fr, opt)
 %--------------------------------------------------------------------------
 %
 % Copyright (c) 2013 Jeffrey Byrne
@@ -9,6 +9,22 @@ function [d,di] = seedoflife(f, fr, opt)
 %% Inputs
 if ~exist('opt','var')
   opt = nsd.opts().sol;
+end
+
+
+%% Gaussian pyramid
+oe_gpyr = zeros(cat(2, f.spyr.n_scales, size(f.oe_pooled))); 
+for i=1:f.spyr.n_scales
+  for j=1:f.spyr.n_orientations
+    b = nsd.util.gaussianpyr(f.spyr.oe.b{i}{j}, f.spyr.n_scales-i+1);
+    for k=1:f.spyr.n_scales
+      if k < i
+        oe_gpyr(k,j,i,:,:) = imresize(b{1}, size(f.imgrey));
+      else
+        oe_gpyr(k,j,i,:,:) = imresize(b{k-i+1}, size(f.imgrey));
+      end
+    end
+  end
 end
 
 
@@ -30,6 +46,7 @@ P = zeros(n_lobes, n_lobescale, n_desc);  % descriptors
 D = zeros(n_bands, n_lobes, n_lobescale, n_desc);  % descriptors
 oesize = size(f.oe_pooled);
 f_oe = reshape(f.oe_pooled, [oesize(1) oesize(2) oesize(3)*oesize(4)]); 
+f_oe_gpyr = reshape(oe_gpyr, [size(oe_gpyr,1) oesize(1) oesize(2) oesize(3)*oesize(4)]);  % TESTING 
 for i=1:n_lobes
   for j=1:n_lobescale
     r = opt.dr .* fr_s .* 2.^(j-1);
@@ -76,15 +93,44 @@ for i=1:n_lobes
 %       end
 %     end
     
-    % Euclidean pooling
+%     % Euclidean pooling
+%     for u=1:n_bands
+%       for v=j
+%         di = mod((i-u),n_lobes)+1;
+%         dj = v;
+%         P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+%       end
+%     end
+% 
+%     % Euclidean pooling
+%     for u=1:n_bands
+%       for v=j
+%         di = mod((i-u),n_lobes)+1;
+%         dj = v;
+%         P(di, dj, :) = P(di, dj, :) + d(di, max(v-1,1),:).*(n_scales+1-j);
+%       end
+%     end
+
+
+    % Affine pooling
+    d_gpyr = f_oe_gpyr(:,:,:,k_rlip);         
     for u=1:n_bands
-      for v=j
-        di = mod((i-u),n_lobes)+1;
-        dj = v;
-        P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, max(v-1,1),:).*(n_scales+1-j);
+      for v=(j-2):1:(j+2)
+        di = mod((i-u),n_lobes)+1;  % relative orientation
+        dj = max(min(j-v+ceil(n_scales/2), n_scales), 1);  % relative scale
+        %P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, dj,:).*(1+abs(dj - (n_scales/2)));
+        
+        %P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, min(max(v-1,1),n_scales), :).*(n_scales+1-v);
+        %P(u, dj, :) = P(u, dj, :) + d(u, min(max(v-1,1),n_scales), :);
+        %P(di, dj, :) = P(di, dj, :) + d(mod(n_bands-u+1, n_bands)+1, min(max(v-1,1),n_scales), :).*(n_scales+1-j).*(exp((dj - floor(n_scales/2)).^2));
+        
+        
+        %p = squeeze(d_gpyr(min(max(max(j,v),1),n_scales), mod(n_bands-u+1, n_bands)+1, min(max(v-1,1),n_scales), :).*(n_scales+1-j));
+        p = squeeze(d_gpyr(min(max(j,1),n_scales), mod(n_bands-u+1, n_bands)+1, min(max(v-1,1),n_scales), :)).*(n_scales+1-j);
+        
+        P(di, dj, :) = P(di, dj, :) + reshape(p, [1 1 length(p)]);
       end
     end
-    
   end
 end
 

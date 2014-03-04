@@ -54,7 +54,9 @@ end
 switch lower(opt.mode)
   case {'floweroflife'}
     f = nsd.seedoflife.features(im, opt.features);    
-  case {'seedoflife','clover','cocentric','nsd','asol'}
+  case {'seedoflife','nsd','asol'}
+    f = nsd.seedoflife.features(im, opt.features);
+  case {'clover','cocentric'}
     opt.features.do_legacy_pooling = true;  % FORCE ME
     f = nsd.seedoflife.features(im, opt.features);
   otherwise

@@ -41,7 +41,7 @@ m_support = opt.pooling.m_support;
 n_support = length(m_support);
 n_orientations = spyr.n_orientations;
 n_scales = spyr.n_scales;
-if opt.do_legacy_pooling  % only for old seedoflife
+if opt.do_legacy_pooling  % only for old seedoflife, UNUSED CURRENTLY
   for i=1:n_scales
     n_oe = numel(spyr.oe.b{i}{1});
     for j=1:n_support
